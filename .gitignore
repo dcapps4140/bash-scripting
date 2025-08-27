@@ -1,0 +1,11 @@
+# Ignore temporary files
+*.tmp
+*.temp
+*~
+
+# Ignore log files
+*.log
+
+# Ignore sensitive configuration files
+*secret*
+*password*
