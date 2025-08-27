@@ -2,6 +2,7 @@
 # script_manager.sh - Manage TAK scripts
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common/tak_functions.sh"
 
 case "$1" in
     "list")
@@ -44,14 +45,30 @@ case "$1" in
             find "$SCRIPT_DIR/configs" -name "*.conf" | sort
         fi
         ;;
-    "save")
-        if [ -n "$2" ]; then
-            cp "$2" "$SCRIPT_DIR/tak/"
-            echo "Script saved to $SCRIPT_DIR/tak/$(basename "$2")"
-            chmod +x "$SCRIPT_DIR/tak/$(basename "$2")"
+    "install")
+        if [ -n "$2" ] && [ -f "$SCRIPT_DIR/tak/$2" ]; then
+            sudo ln -sf "$SCRIPT_DIR/tak/$2" "/usr/local/bin/$(basename "$2" .sh)"
+            success "Installed $2 to /usr/local/bin/$(basename "$2" .sh)"
+        elif [ -n "$2" ] && [ -f "$SCRIPT_DIR/tak/$2.sh" ]; then
+            sudo ln -sf "$SCRIPT_DIR/tak/$2.sh" "/usr/local/bin/$2"
+            success "Installed $2.sh to /usr/local/bin/$2"
         else
-            echo "Usage: $0 save /path/to/script.sh"
+            error "Script not found: $2"
+            echo "Available scripts:"
+            find "$SCRIPT_DIR/tak" -name "*.sh" | sort
         fi
+        ;;
+    "uninstall")
+        if [ -n "$2" ] && [ -L "/usr/local/bin/$2" ]; then
+            sudo rm "/usr/local/bin/$2"
+            success "Uninstalled $2 from /usr/local/bin"
+        else
+            error "Symlink not found: /usr/local/bin/$2"
+        fi
+        ;;
+    "installed")
+        echo "Installed scripts:"
+        find /usr/local/bin -type l -exec ls -la {} \; | grep "$SCRIPT_DIR"
         ;;
     *)
         echo "TAK Script Manager"
@@ -63,6 +80,8 @@ case "$1" in
         echo "  doc [name]        Show documentation for a script"
         echo "  config list       List all available configurations"
         echo "  config [name]     Show a specific configuration"
-        echo "  save [path]       Save an external script to the repository"
+        echo "  install [script]  Create symlink in /usr/local/bin"
+        echo "  uninstall [name]  Remove symlink from /usr/local/bin"
+        echo "  installed         List all installed scripts"
         ;;
 esac
