@@ -85,3 +85,18 @@ case "$1" in
         echo "  installed         List all installed scripts"
         ;;
 esac
+
+    "new")
+        if [ -n "$2" ]; then
+            cp "$SCRIPT_DIR/template.sh" "$SCRIPT_DIR/tak/$2.sh"
+            chmod +x "$SCRIPT_DIR/tak/$2.sh"
+            echo "# $2 Script" > "$SCRIPT_DIR/documentation/$2.md"
+            echo "" >> "$SCRIPT_DIR/documentation/$2.md"
+            echo "## Purpose" >> "$SCRIPT_DIR/documentation/$2.md"
+            echo "Description of what the script does" >> "$SCRIPT_DIR/documentation/$2.md"
+            success "Created new script: $SCRIPT_DIR/tak/$2.sh"
+            success "Created documentation: $SCRIPT_DIR/documentation/$2.md"
+        else
+            error "Usage: $0 new <script_name>"
+        fi
+        ;;
